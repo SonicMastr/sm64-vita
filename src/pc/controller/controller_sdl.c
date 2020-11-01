@@ -1,4 +1,4 @@
-#if !defined(_WIN32) && !defined(_WIN64) && !defined(TARGET_VITA)
+#if !defined(_WIN32) && !defined(_WIN64) && !defined(TARGET_VITA_GLES)
 
 #include <stdio.h>
 #include <stdint.h>

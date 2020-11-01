@@ -16,11 +16,9 @@
 #include "gfx_rendering_api.h"
 #include "gfx_screen_config.h"
 
-#ifdef TARGET_VITA
+#ifdef TARGET_VITA_GLES
 #include <psp2/kernel/processmgr.h>
 #endif
-
-#define GBI_FLOATS
 
 #define SUPPORT_CHECK(x) assert(x)
 
@@ -161,7 +159,7 @@ static struct GfxRenderingAPI *gfx_rapi;
 
 #include <time.h>
 static unsigned long get_time(void) {
-#ifndef TARGET_VITA    
+#ifndef TARGET_VITA_GLES
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (unsigned long)ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
@@ -1228,38 +1226,22 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     
     ul->x = ulxf;
     ul->y = ulyf;
-#ifndef TARGET_VITA
-    ul->z = -1.0f;
-#else
     ul->z = 1.0f;
-#endif
     ul->w = 1.0f;
     
     ll->x = ulxf;
     ll->y = lryf;
-#ifndef TARGET_VITA
-    ll->z = -1.0f;
-#else
     ll->z = 1.0f;
-#endif
     ll->w = 1.0f;
     
     lr->x = lrxf;
     lr->y = lryf;
-#ifndef TARGET_VITA
-    lr->z = -1.0f;
-#else
     lr->z = 1.0f;
-#endif
     lr->w = 1.0f;
     
     ur->x = lrxf;
     ur->y = ulyf;
-#ifndef TARGET_VITA
-    ur->z = -1.0f;
-#else
     ur->z = 1.0f;
-#endif
     ur->w = 1.0f;
     
     // The coordinates for texture rectangle shall bypass the viewport setting

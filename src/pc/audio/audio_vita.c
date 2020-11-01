@@ -1,4 +1,4 @@
-#ifdef TARGET_VITA
+#ifdef TARGET_VITA_GLES
 
 #include <stdbool.h>
 #include <psp2/audioout.h>

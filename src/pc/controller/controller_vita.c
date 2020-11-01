@@ -1,5 +1,3 @@
-#if defined(TARGET_VITA)
-
 #include <psp2/ctrl.h>
 
 #include <ultra64.h>
@@ -61,5 +59,3 @@ struct ControllerAPI controller_vita = {
     vita_init,
     vita_read
 };
-
-#endif

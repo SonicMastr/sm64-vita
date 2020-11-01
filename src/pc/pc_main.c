@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifdef TARGET_WEB
 #include <emscripten.h>
@@ -12,8 +13,8 @@
 
 #include "gfx/gfx_pc.h"
 #include "gfx/gfx_opengl.h"
-#include "gfx/gfx_vitagl.h"
 #include "gfx/gfx_vita.h"
+#include "gfx/gfx_vita_gles2.h"
 #include "gfx/gfx_direct3d11.h"
 #include "gfx/gfx_direct3d12.h"
 #include "gfx/gfx_dxgi.h"
@@ -23,9 +24,9 @@
 #include "audio/audio_api.h"
 #include "audio/audio_wasapi.h"
 #include "audio/audio_pulse.h"
+#include "audio/audio_vita.h"
 #include "audio/audio_alsa.h"
 #include "audio/audio_sdl.h"
-#include "audio/audio_vita.h"
 #include "audio/audio_null.h"
 
 #include "controller/controller_keyboard.h"
@@ -35,10 +36,6 @@
 #include "compat.h"
 
 #define CONFIG_FILE "sm64config.txt"
-
-#ifdef TARGET_VITA
-unsigned int _newlib_heap_size_user = 64 * 1024 * 1024;
-#endif
 
 OSMesg D_80339BEC;
 OSMesgQueue gSIEventMesgQueue;
@@ -147,8 +144,8 @@ static void on_fullscreen_changed(bool is_now_fullscreen) {
 }
 
 void main_func(void) {
-    static u8 pool[DOUBLE_SIZE_ON_64_BIT(0x165000)] __attribute__((aligned(16)));
-    main_pool_init(pool, pool + sizeof(pool));
+    static u64 pool[0x165000/8 / 4 * sizeof(void *)];
+    main_pool_init(pool, pool + sizeof(pool) / sizeof(pool[0]));
     gEffectsMemoryPool = mem_pool_init(0x4000, MEMORY_POOL_LEFT);
 
     configfile_load(CONFIG_FILE);
@@ -157,6 +154,11 @@ void main_func(void) {
 #ifdef TARGET_WEB
     emscripten_set_main_loop(em_main_loop, 0, 0);
     request_anim_frame(on_anim_frame);
+#endif
+
+#ifdef TARGET_VITA_GLES
+    rendering_api = &gfx_vita_opengles2_api;
+    wm_api = &gfx_vita;
 #endif
 
 #if defined(ENABLE_DX12)
@@ -172,9 +174,6 @@ void main_func(void) {
     #else
         wm_api = &gfx_sdl;
     #endif
-#elif defined(TARGET_VITA)
-    rendering_api = &gfx_vitagl_api;
-    wm_api = &gfx_vita;
 #endif
 
     gfx_init(wm_api, rendering_api, "Super Mario 64 PC-Port", configFullscreen);
@@ -202,7 +201,7 @@ void main_func(void) {
         audio_api = &audio_sdl;
     }
 #endif
-#ifdef TARGET_VITA
+#ifdef TARGET_VITA_GLES
     if (audio_api == NULL && audio_vita.init()) {
         audio_api = &audio_vita;
     }

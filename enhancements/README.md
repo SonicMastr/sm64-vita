@@ -23,8 +23,6 @@ This allows the game to be rendered at 60 FPS instead of 30 FPS by interpolation
 
 The Mario head intro is the only exception which is still rendered at 30 FPS.
 
-This patch is rather unstable on the Vita, some levels simply will not load with it.
-
 ## Crash Screen - `crash.patch`
 
 This enhancement provides a crash screen that is displayed when the code throws a hardware exception. This may be useful for diagnosing crashes in game code.

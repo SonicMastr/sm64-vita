@@ -162,8 +162,8 @@ Gfx *intro_backdrop_one_image(s32 index, s8 *backgroundTable) {
     displayList = alloc_display_list(36 * sizeof(*displayList));
     displayListIter = displayList;
     vIntroBgTable = segmented_to_virtual(introBackgroundTextureType[backgroundTable[index]]);
-#ifndef TARGET_VITA
-    guTranslate(mtx, introBackgroundOffsetX[index], introBackgroundOffsetY[index], 0.0f);
+#ifndef TARGET_VITA_GLES
+    guTranslate(mtx, introBackgroundOffsetX[index], introBackgroundOffsetY[index], -1.0f);
 #else
     guTranslate(mtx, introBackgroundOffsetX[index], introBackgroundOffsetY[index], -1.0f);
 #endif

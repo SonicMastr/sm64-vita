@@ -1,4 +1,3 @@
-# Note that using # comments behind macros causes issues on some compilers
 .include "seq_macros.inc"
 .section .rodata
 .align 0

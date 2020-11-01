@@ -21,10 +21,10 @@ NON_MATCHING ?= 0
 TARGET_N64 ?= 0
 # Build for Emscripten/WebGL
 TARGET_WEB ?= 0
-# Build for PS Vita
-TARGET_VITA ?= 0
 # Compiler to use (ido or gcc)
 COMPILER ?= ido
+# Build for PS Vita
+TARGET_VITA_GLES ?= 0
 
 # Automatic settings only for ports
 ifeq ($(TARGET_N64),0)
@@ -32,8 +32,8 @@ ifeq ($(TARGET_N64),0)
   NON_MATCHING := 1
   GRUCODE := f3dex2e
   TARGET_WINDOWS := 0
-  
-  ifeq ($(TARGET_VITA), 0)
+
+  ifeq ($(TARGET_VITA_GLES), 0)
     ifeq ($(TARGET_WEB),0)
       ifeq ($(OS),Windows_NT)
         TARGET_WINDOWS := 1
@@ -52,7 +52,7 @@ ifeq ($(TARGET_N64),0)
       endif
     endif
   else
-    ifeq ($(TARGET_VITA), 0)
+    ifeq ($(TARGET_VITA_GLES), 0)
       # On others, default to OpenGL
       ENABLE_OPENGL ?= 1
     endif
@@ -198,7 +198,7 @@ BUILD_DIR_BASE := build
 ifeq ($(TARGET_N64),1)
   BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)
 else
-ifeq ($(TARGET_VITA),1)
+ifeq ($(TARGET_VITA_GLES),1)
   BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)_vita
 else
 ifeq ($(TARGET_WEB),1)
@@ -434,11 +434,11 @@ export LANG := C
 
 else # TARGET_N64
 
-ifeq ($(TARGET_VITA),1)
-  CROSS := arm-vita-eabi-
+ifeq ($(TARGET_VITA_GLES),1)
+  CROSS := arm-dolce-eabi-
   OPT_FLAGS += -mtune=cortex-a9 -mfpu=neon
-  VITA_APPNAME := Super Mario 64 PC
-  VITA_TITLEID := PCSE64001
+  DOLCE_APPNAME := Super Mario 64
+  DOLCE_TITLEID := PCSE64002
 
   AS        := $(CROSS)as
   CC        := $(CROSS)gcc
@@ -480,14 +480,14 @@ ifeq ($(TARGET_WEB),1)
   PLATFORM_CFLAGS  := -DTARGET_WEB
   PLATFORM_LDFLAGS := -lm -no-pie -s TOTAL_MEMORY=20MB -g4 --source-map-base http://localhost:8080/ -s "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain']"
 endif
-ifeq ($(TARGET_VITA),1)
-  PLATFORM_CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) $(VERSION_CFLAGS) $(GRUCODE_CFLAGS) -Wfatal-errors -fsigned-char -DTARGET_VITA -D__vita__
+ifeq ($(TARGET_VITA_GLES),1)
+  PLATFORM_CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) $(VERSION_CFLAGS) $(GRUCODE_CFLAGS) -Wfatal-errors -fsigned-char -DTARGET_VITA_GLES -D__vita__
   PLATFORM_LDFLAGS := -Wl,-q \
-    -lvitaGL -lvitashark \
-    -lScePvf_stub -lmathneon -lSceAppMgr_stub \
+    -lpib \
+    -lScePvf_stub -lSceAppMgr_stub \
     -lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lm \
-    -lSceAppUtil_stub -lc -lScePower_stub -lSceCommonDialog_stub \
-    -lSceAudio_stub -lSceShaccCg_stub -lSceGxm_stub -lSceDisplay_stub
+    -lSceAppUtil_stub -lScePower_stub -lSceCommonDialog_stub -lc\
+    -lSceAudio_stub -lSceGxm_stub -lSceDisplayUser_stub
 endif
 
 PLATFORM_CFLAGS += -DNO_SEGMENTED_MEMORY
@@ -521,7 +521,7 @@ endif
 GFX_CFLAGS += -DWIDESCREEN
 
 CC_CHECK := $(CC) -fsyntax-only -fsigned-char $(INCLUDE_CFLAGS) -Wall -Wextra -Wno-format-security -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS)
-ifeq ($(TARGET_VITA), 0)
+ifeq ($(TARGET_VITA_GLES), 0)
   CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS) -fno-strict-aliasing -fwrapv -march=native
 else
   CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS) -fno-strict-aliasing -fwrapv -march=armv7-a
@@ -861,15 +861,14 @@ $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(
 endif
 
 vpk: $(EXE)
-	@cp -r --remove-destination vita/sce_sys $(BUILD_DIR)/
-	@cp -r --remove-destination vita/shaders $(BUILD_DIR)/
+	@cp -r --remove-destination dolce/sce_sys $(BUILD_DIR)/
 	@cp $< $<.unstripped.elf
 	@$(CROSS)strip -g $<
-	@vita-elf-create $< $(EXE).velf
-	@vita-make-fself -s -c $(EXE).velf $(BUILD_DIR)/eboot.bin
-	@vita-mksfoex -s TITLE_ID="$(VITA_TITLEID)" "$(VITA_APPNAME)" $(BUILD_DIR)/sce_sys/param.sfo
-	@vita-pack-vpk -s $(BUILD_DIR)/sce_sys/param.sfo -b $(BUILD_DIR)/eboot.bin \
-		--add $(BUILD_DIR)/sce_sys=sce_sys \
+	@dolce-elf-create -h 3194304 $< $(EXE).velf
+	@dolce-make-fself -c $(EXE).velf $(BUILD_DIR)/eboot.bin
+	@dolce-mksfoex -s TITLE_ID="$(DOLCE_TITLEID)" "$(DOLCE_APPNAME)" $(BUILD_DIR)/sce_sys/param.sfo
+	@dolce-make-pkg -f vpk -t app -a $(BUILD_DIR)/sce_sys/param.sfo sce_sys/param.sfo -a $(BUILD_DIR)/eboot.bin eboot.bin\
+		-a $(BUILD_DIR)/sce_sys sce_sys \
 		$(EXE).vpk
 
 .PHONY: all clean distclean default diff test load libultra

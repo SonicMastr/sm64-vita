@@ -1,7 +1,7 @@
 #ifndef GFX_VITA_H
 #define GFX_VITA_H
 
-#ifdef TARGET_VITA
+#ifdef TARGET_VITA_GLES
 
 #include "gfx_window_manager_api.h"
 
