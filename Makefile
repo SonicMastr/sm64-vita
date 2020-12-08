@@ -487,7 +487,7 @@ ifeq ($(TARGET_VITA_GLES),1)
     -lScePvf_stub -lSceAppMgr_stub \
     -lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub -lm \
     -lSceAppUtil_stub -lScePower_stub -lSceCommonDialog_stub -lc\
-    -lSceAudio_stub -lSceGxm_stub -lSceDisplayUser_stub
+    -lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub
 endif
 
 PLATFORM_CFLAGS += -DNO_SEGMENTED_MEMORY

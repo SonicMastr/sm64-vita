@@ -30,16 +30,14 @@ void gfx_vita_init(const char *game_name, bool start_in_fullscreen) {
         EGL_BLUE_SIZE, 8,
         EGL_ALPHA_SIZE, 8,
         EGL_DEPTH_SIZE, 32,
-        EGL_STENCIL_SIZE, 0,
-        EGL_SAMPLE_BUFFERS, 0,
-        EGL_SAMPLES, 0,
+        EGL_STENCIL_SIZE, 8,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
         EGL_NONE};
     const EGLint contextAttribs[] = {
         EGL_CONTEXT_CLIENT_VERSION, 2,
         EGL_NONE };
 
-    pibInit(PIB_SHACCCG);
+    pibInit(PIB_SHACCCG | PIB_ENABLE_MSAA);
     display = eglGetDisplay(0);
 
     eglInitialize(display, &majorVersion, &minorVersion);
